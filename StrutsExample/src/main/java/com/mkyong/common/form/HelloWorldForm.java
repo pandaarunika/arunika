@@ -9,6 +9,15 @@ public class HelloWorldForm extends ActionForm{
 	String gender;
 	Boolean indian;
 	String city[];
+	String selectedCity;
+	public String getSelectedCity() {
+		return selectedCity;
+	}
+
+	public void setSelectedCity(String selectedCity) {
+		this.selectedCity = selectedCity;
+	}
+
 	public String[] getCity() {
 		return city;
 	}

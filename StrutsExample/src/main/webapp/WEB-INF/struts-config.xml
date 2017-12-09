@@ -18,7 +18,7 @@
 			
 		</action>
 		<action path="/submit"
-			type="com.mkyong.common.action.HelloWorldAction"
+			type="com.mkyong.common.action.SubmitAction"
 			name="helloWorldForm">
 			<forward name="success" path="/FormContents.jsp"/>
 			

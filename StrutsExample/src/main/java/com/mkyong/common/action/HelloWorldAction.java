@@ -10,23 +10,23 @@ import org.apache.struts.action.ActionMapping;
 
 import com.mkyong.common.form.HelloWorldForm;
 
-public class HelloWorldAction extends Action{
-	
-	public ActionForward execute(ActionMapping mapping,ActionForm form,
-			HttpServletRequest request,HttpServletResponse response) throws Exception {
-		
+public class HelloWorldAction extends Action {
+
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+
 		HelloWorldForm helloWorldForm = (HelloWorldForm) form;
 		helloWorldForm.setMessage("Hello World! Struts");
-		String [] cities = new String [] {"BBS","BLR","CHN"};
+		// set gender in request
+		request.setAttribute("var1", "male");
+		request.setAttribute("var2", "female");
+		//set city in form
+		String[] cities = new String[] { "BBS", "BLR", "CHN" };
 		helloWorldForm.setCity(cities);
-		/*request.setAttribute("city", helloWorldForm.getCity());
-		request.setAttribute("var", "Hello World! Struts");
-		request.setAttribute("name", helloWorldForm.getName());
-		request.setAttribute("gender",helloWorldForm.getGender());
-		request.setAttribute("indian",helloWorldForm.getIndian());
-		request.setAttribute("city", helloWorldForm.getCity());*/
+		//set form in request
 		request.setAttribute("helloWorldForm", helloWorldForm);
+		System.out.println(helloWorldForm.getName());
 		return mapping.findForward("success");
 	}
-	
+
 }

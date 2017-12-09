@@ -7,11 +7,20 @@
 <body>
 <table>
 <tr >
-<td>NAme</td>
-<td>Gender</td>
-<td>City</td>
-<td>Indian</td>
+<th>NAME</th>
+<th>GENDER</th>
+<th>CITY</th>
+<th>INDIAN</th>
 </tr>
+<tr>
+<th>
+<bean:write name="helloWorldForm" property="name" />
+
+ </th>
+<th>
+<bean:write name="helloWorldForm" property="gender" /></th>
+<th><bean:write name="helloWorldForm" property="selectedCity" /></th>
+<th><bean:write name="helloWorldForm" property="indian" /></th></tr>
 </table>
 </body>
 </html>
