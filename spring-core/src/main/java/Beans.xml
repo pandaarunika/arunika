@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<bean id="employee" class="com.arunika.spring_core.Employee" parent="abstractEmployee">
+		<property name="name" value="arunika" />
+		<constructor-arg  ref="dept"/>
+	</bean>
+	<bean name="employee1,e1" class="com.arunika.spring_core.Employee"
+		scope="prototype" init-method="init" destroy-method="destroy">
+		<property name="name" value="arya" />
+		<property name="dept" ref="dept"/>
+	</bean>
+	
+	<bean id="abstractEmployee" abstract="true">
+		<property name="id" value="1"/>
+	</bean>
+	
+	<bean id="dept" class=" com.arunika.spring_core.Department" >
+	<property name="dptName" value="Physics"/>
+	</bean>
+
+	<bean name="myBeanPostProcessor" class="com.arunika.spring_core.MyBeanPostProcessor">
+	</bean>
+	
+	
+	
+
+</beans>
