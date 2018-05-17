@@ -1,2 +1,5 @@
 StrutsExample/target/
 StrutsExample/.settings/
+.metadata/
+.recommenders/
+RemoteSystemsTempFiles/
