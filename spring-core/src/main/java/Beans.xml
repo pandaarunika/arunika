@@ -33,7 +33,6 @@
 
 	<bean name="myBeanPostProcessor" class="com.arunika.spring_core.MyBeanPostProcessor">
 	</bean>
-	<bean id="MapObj" class="java.util.Map">
 	
 	
 	
