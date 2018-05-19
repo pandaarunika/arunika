@@ -6,6 +6,16 @@
 	<bean id="employee" class="com.arunika.spring_core.Employee" parent="abstractEmployee">
 		<property name="name" value="arunika" />
 		<constructor-arg  ref="dept"/>
+		<property name="inbean" >
+			<bean id="inbean" class="com.arunika.spring_core.InnerBeanEx"/>
+		</property>
+		<property name="shiftList">
+			<list>
+				<value>A shift</value>
+				<value>B shift</value>
+				<value>C shift</value>
+			</list>
+		</property>
 	</bean>
 	<bean name="employee1,e1" class="com.arunika.spring_core.Employee"
 		scope="prototype" init-method="init" destroy-method="destroy">
@@ -23,6 +33,7 @@
 
 	<bean name="myBeanPostProcessor" class="com.arunika.spring_core.MyBeanPostProcessor">
 	</bean>
+	<bean id="MapObj" class="java.util.Map">
 	
 	
 	
