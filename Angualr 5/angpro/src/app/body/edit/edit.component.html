@@ -1,0 +1,42 @@
+
+
+  <div class="container">
+      <h5>Movie Form</h5>
+      <form>
+          <div class="form-group" >
+            <table>
+              <tr>
+                <td>
+                  <label for="movieName" >Movie</label>
+                </td>
+                <td>
+                  <input type="text" id="movieName" [(ngModel)]='editMovie.movieName' name="movieName">
+                </td>
+              </tr>
+              <tr>
+                <td >
+                  <label for="year" >Year</label>
+                </td>
+                <td>
+                  <input type="text" id="year" [(ngModel)]="editMovie.year" name="year" >
+                </td>
+              </tr>
+              <tr>
+                  <td >
+                    <label for="rating" >Rating</label>
+                  </td>
+                  <td>
+                    <input type="text" id="rating" [(ngModel)]="editMovie.rating" name="rating" >
+                  </td>
+              </tr>
+
+
+              
+              <tr>
+                  <input type="button" value="Submit" (click)="updateMovie(editMovie)">
+              </tr>
+            </table>
+          </div>
+  
+      </form>
+    </div>  

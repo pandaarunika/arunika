@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-	<bean id="employee" class="com.arunika.spring_core.Employee" parent="abstractEmployee">
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:annotation-config />
+	<bean id="employee" class="com.arunika.spring_core.Employee"
+		parent="abstractEmployee" autowire="constructor">
 		<property name="name" value="arunika" />
-		<constructor-arg  ref="dept"/>
-		<property name="inbean" >
-			<bean id="inbean" class="com.arunika.spring_core.InnerBeanEx"/>
+		<!-- <constructor-arg ref="dept"/> -->
+		<property name="inbean">
+			<bean id="inbean" class="com.arunika.spring_core.InnerBeanEx" />
 		</property>
 		<property name="shiftList">
 			<list>
@@ -20,21 +23,31 @@
 	<bean name="employee1,e1" class="com.arunika.spring_core.Employee"
 		scope="prototype" init-method="init" destroy-method="destroy">
 		<property name="name" value="arya" />
-		<property name="dept" ref="dept"/>
+		<property name="dept" ref="dept" />
 	</bean>
-	
+
 	<bean id="abstractEmployee" abstract="true">
-		<property name="id" value="1"/>
+		<property name="id" value="1" />
 	</bean>
-	
-	<bean id="dept" class=" com.arunika.spring_core.Department" >
-	<property name="dptName" value="Physics"/>
+
+	<bean id="dept" class=" com.arunika.spring_core.Department">
+		<property name="dptName" value="Physics" />
 	</bean>
 
 	<bean name="myBeanPostProcessor" class="com.arunika.spring_core.MyBeanPostProcessor">
 	</bean>
-	
-	
-	
 
+
+	<!-- To check auto wiring through annotation. Use @Autowired annotation 
+		on setter methods to get rid of the <property> element in XML configuration 
+		file. When Spring finds an @Autowired annotation used with setter methods, 
+		it tries to perform byType autowiring on the method. -->
+	<bean id="Student" class="com.arunika.spring_core_annotation.Student" />
+
+	<bean id="Subjects" class="com.arunika.spring_core_annotation.Subjects">
+		<property name="name" value="abcdef" />
+	</bean>
+	<bean id="Subjects1" class="com.arunika.spring_core_annotation.Subjects">
+		<property name="name" value="xyz" />
+	</bean>
 </beans>

@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.arunika.spring_core_annotation.Student;
+
 /**
  * Hello world!
  *
@@ -24,6 +26,9 @@ public class App {
 		List<String> shift = e.getShiftList();
 		for(String s:shift){
 			System.out.println(s);
-		}
+		}	
+		Student s1 =( Student)context.getBean("Student");
+		System.out.println(s1.getS().getName());
+		
 	}
 }

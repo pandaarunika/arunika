@@ -3,3 +3,15 @@ StrutsExample/.settings/
 .metadata/
 .recommenders/
 RemoteSystemsTempFiles/
+test/
+spring-rest/.settings/
+spring-rest/.project
+spring-rest/.classpath
+spring-mvc/.settings/
+spring-mvc/.project
+spring-mvc/.classpath
+Servers2/
+Servers/
+jars/
+HackerRank/
+JDBCTest/
