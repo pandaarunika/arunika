@@ -22,48 +22,45 @@ public class DynamoDBScanRequest {
                 .credentialsProvider(DefaultCredentialsProvider.create())
                 .build();
 
-        // Get today's date in the format expected by DynamoDB (YYYY-MM-DD)
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String todayString = today.format(formatter);
-
         // Specify the table name
         String tableName = "table_name";
 
         // Define the scan request
-        Map<String, AttributeValue> expressionAttributeValues = new HashMap<>();
-        expressionAttributeValues.put(":date", AttributeValue.builder().s(todayString).build());
-
         ScanRequest scanRequest = ScanRequest.builder()
                 .tableName(tableName)
-                .filterExpression("cobDt = :date")
-                .expressionAttributeValues(expressionAttributeValues)
                 .build();
 
         // Perform the scan operation
         try {
             ScanResponse response = dynamoDbClient.scan(scanRequest);
-            
-            // Group the data by source
-            Map<String, List<Map<String, AttributeValue>>> groupedBySource = response.items().stream()
-                    .collect(Collectors.groupingBy(item -> item.get("source").s()));
 
-            // Print the grouped data
-            groupedBySource.forEach((source, items) -> {
-                System.out.println("Source: " + source);
-                
-                // If source is PAYMENTS, further group by subsource
-                if ("PAYMENTS".equals(source)) {
-                    Map<String, List<Map<String, AttributeValue>>> groupedBySubsource = items.stream()
-                            .collect(Collectors.groupingBy(item -> item.get("subsource").s()));
-                    groupedBySubsource.forEach((subsource, subItems) -> {
-                        System.out.println("\tSubsource: " + subsource);
-                        subItems.forEach(item -> System.out.println("\t" + item));
-                    });
-                } else {
-                    items.forEach(item -> System.out.println(item));
-                }
-            });
+            // Process the response
+            List<CobDtResponse> cobDtResponses = response.items().stream()
+                    .map(item -> {
+                        String cobDt = item.get("cobDt").s();
+                        Map<String, AttributeValue> sourceMap = item.get("Source").m();
+
+                        int paymentSourceCount = (int) sourceMap.values().stream()
+                                .map(AttributeValue::s)
+                                .filter(source -> source.contains("PAYMENT"))
+                                .count();
+
+                        Map<String, Integer> otherSourceCounts = sourceMap.values().stream()
+                                .map(AttributeValue::s)
+                                .filter(source -> !source.contains("PAYMENT"))
+                                .collect(Collectors.toMap(
+                                        source -> source,
+                                        source -> 1,
+                                        Integer::sum
+                                ));
+
+                        return new CobDtResponse(cobDt, paymentSourceCount, otherSourceCounts);
+                    })
+                    .collect(Collectors.toList());
+
+            // Print or process the CobDtResponse objects as needed
+            cobDtResponses.forEach(System.out::println);
+
         } catch (DynamoDbException e) {
             System.err.println("Unable to scan the table: " + e.getMessage());
         } finally {
