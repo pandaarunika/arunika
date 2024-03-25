@@ -9,7 +9,9 @@ import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DynamoDBScanRequest {
 
@@ -41,7 +43,27 @@ public class DynamoDBScanRequest {
         // Perform the scan operation
         try {
             ScanResponse response = dynamoDbClient.scan(scanRequest);
-            response.items().forEach(item -> System.out.println(item));
+            
+            // Group the data by source
+            Map<String, List<Map<String, AttributeValue>>> groupedBySource = response.items().stream()
+                    .collect(Collectors.groupingBy(item -> item.get("source").s()));
+
+            // Print the grouped data
+            groupedBySource.forEach((source, items) -> {
+                System.out.println("Source: " + source);
+                
+                // If source is PAYMENTS, further group by subsource
+                if ("PAYMENTS".equals(source)) {
+                    Map<String, List<Map<String, AttributeValue>>> groupedBySubsource = items.stream()
+                            .collect(Collectors.groupingBy(item -> item.get("subsource").s()));
+                    groupedBySubsource.forEach((subsource, subItems) -> {
+                        System.out.println("\tSubsource: " + subsource);
+                        subItems.forEach(item -> System.out.println("\t" + item));
+                    });
+                } else {
+                    items.forEach(item -> System.out.println(item));
+                }
+            });
         } catch (DynamoDbException e) {
             System.err.println("Unable to scan the table: " + e.getMessage());
         } finally {
