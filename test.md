@@ -1,7 +1,9 @@
-import com.opencsv.CSVReader;
+gimport com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,13 +13,14 @@ public class CSVFilter {
         // Path to x.csv and y.csv
         String xFilePath = "x.csv";
         String yFilePath = "y.csv";
+        String outputFilePath = "filtered_records.csv";
 
         // Read accounts from y.csv
         List<String> accounts = readAccounts(yFilePath);
 
         if (accounts != null) {
             // Filter records from x.csv
-            filterRecords(xFilePath, accounts);
+            filterRecords(xFilePath, accounts, outputFilePath);
         }
     }
 
@@ -36,16 +39,17 @@ public class CSVFilter {
         return accounts;
     }
 
-    private static void filterRecords(String filePath, List<String> accounts) {
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+    private static void filterRecords(String filePath, List<String> accounts, String outputFilePath) {
+        try (CSVReader reader = new CSVReader(new FileReader(filePath));
+             CSVWriter writer = new CSVWriter(new FileWriter(outputFilePath))) {
             String[] nextLine;
             while ((nextLine = reader.readNext()) != null) {
                 // Assuming payer_account_number is in the first column and payee_account_number is in the second column
                 String payerAccountNumber = nextLine[0];
                 String payeeAccountNumber = nextLine[1];
                 if (accounts.contains(payerAccountNumber) || accounts.contains(payeeAccountNumber)) {
-                    // Print or process the record as needed
-                    System.out.println(String.join(",", nextLine));
+                    // Write the record to the output CSV file
+                    writer.writeNext(nextLine);
                 }
             }
         } catch (IOException | CsvValidationException e) {
