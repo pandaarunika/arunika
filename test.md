@@ -1,59 +1,20 @@
-gimport com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvValidationException;
+import pandas as pd
+import glob
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+# Path to the directory containing CSV files
+csv_files_path = 'path_to_directory/*.csv'
 
-public class CSVFilter {
-    public static void main(String[] args) {
-        // Path to x.csv and y.csv
-        String xFilePath = "x.csv";
-        String yFilePath = "y.csv";
-        String outputFilePath = "filtered_records.csv";
+# List to store DataFrames for each CSV file
+dfs = []
 
-        // Read accounts from y.csv
-        List<String> accounts = readAccounts(yFilePath);
+# Read each CSV file, select columns, and append to dfs list
+for file in glob.glob(csv_files_path):
+    df = pd.read_csv(file)
+    selected_columns = df.iloc[:, [0, 2, 3]]  # Selecting 1st, 3rd, and 4th columns
+    dfs.append(selected_columns)
 
-        if (accounts != null) {
-            // Filter records from x.csv
-            filterRecords(xFilePath, accounts, outputFilePath);
-        }
-    }
+# Concatenate all DataFrames in dfs list into a single DataFrame
+result = pd.concat(dfs, ignore_index=True)
 
-    private static List<String> readAccounts(String filePath) {
-        List<String> accounts = new ArrayList<>();
-        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
-            String[] nextLine;
-            while ((nextLine = reader.readNext()) != null) {
-                // Assuming accounts are in the first column
-                accounts.add(nextLine[0]);
-            }
-        } catch (IOException | CsvValidationException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return accounts;
-    }
-
-    private static void filterRecords(String filePath, List<String> accounts, String outputFilePath) {
-        try (CSVReader reader = new CSVReader(new FileReader(filePath));
-             CSVWriter writer = new CSVWriter(new FileWriter(outputFilePath))) {
-            String[] nextLine;
-            while ((nextLine = reader.readNext()) != null) {
-                // Assuming payer_account_number is in the first column and payee_account_number is in the second column
-                String payerAccountNumber = nextLine[0];
-                String payeeAccountNumber = nextLine[1];
-                if (accounts.contains(payerAccountNumber) || accounts.contains(payeeAccountNumber)) {
-                    // Write the record to the output CSV file
-                    writer.writeNext(nextLine);
-                }
-            }
-        } catch (IOException | CsvValidationException e) {
-            e.printStackTrace();
-        }
-    }
-}
+# Print the resulting DataFrame
+print(result)
