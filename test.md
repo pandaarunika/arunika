@@ -1,73 +1,54 @@
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 
-import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CombineCSVFiles {
+public class CSVFilter {
     public static void main(String[] args) {
-        // Specify the directory containing the CSV files
-        String folderPath = "/path/to/your/temp/folder";
+        // Path to x.csv and y.csv
+        String xFilePath = "x.csv";
+        String yFilePath = "y.csv";
 
-        // Specify the column indices for columns AC, AY, and AZ
-        int[] columnIndices = {28, 50, 51}; // Indices: AC=28, AY=50, AZ=51
+        // Read accounts from y.csv
+        List<String> accounts = readAccounts(yFilePath);
 
-        // Initialize a list to store CSV records
-        List<List<String>> allRecords = new ArrayList<>();
+        if (accounts != null) {
+            // Filter records from x.csv
+            filterRecords(xFilePath, accounts);
+        }
+    }
 
-        // Iterate through each file in the folder
-        File folder = new File(folderPath);
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile() && file.getName().endsWith(".csv")) {
-                    try (FileReader fileReader = new FileReader(file);
-                         CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(fileReader)) {
+    private static List<String> readAccounts(String filePath) {
+        List<String> accounts = new ArrayList<>();
+        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+            String[] nextLine;
+            while ((nextLine = reader.readNext()) != null) {
+                // Assuming accounts are in the first column
+                accounts.add(nextLine[0]);
+            }
+        } catch (IOException | CsvValidationException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return accounts;
+    }
 
-                        // Add records to the list
-                        for (CSVRecord record : csvParser) {
-                            List<String> selectedColumns = new ArrayList<>();
-                            for (int index : columnIndices) {
-                                selectedColumns.add(record.get(index));
-                            }
-                            allRecords.add(selectedColumns);
-                        }
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+    private static void filterRecords(String filePath, List<String> accounts) {
+        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+            String[] nextLine;
+            while ((nextLine = reader.readNext()) != null) {
+                // Assuming payer_account_number is in the first column and payee_account_number is in the second column
+                String payerAccountNumber = nextLine[0];
+                String payeeAccountNumber = nextLine[1];
+                if (accounts.contains(payerAccountNumber) || accounts.contains(payeeAccountNumber)) {
+                    // Print or process the record as needed
+                    System.out.println(String.join(",", nextLine));
                 }
             }
-        }
-
-        // Specify the output file path
-        String outputPath = "/path/to/output/folder/combined_data.csv";
-
-        // Write the combined records to a new CSV file
-        try (FileWriter fileWriter = new FileWriter(outputPath);
-             CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.DEFAULT)) {
-
-            // Write headers
-            List<String> headers = new ArrayList<>();
-            headers.add("AC");
-            headers.add("AY");
-            headers.add("AZ");
-            csvPrinter.printRecord(headers);
-
-            // Write records
-            for (List<String> record : allRecords) {
-                csvPrinter.printRecord(record);
-            }
-
-            System.out.println("Combined data saved to: " + outputPath);
-
-        } catch (IOException e) {
+        } catch (IOException | CsvValidationException e) {
             e.printStackTrace();
         }
     }
