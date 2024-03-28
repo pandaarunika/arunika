@@ -8,3 +8,19 @@
                 entries.add(new DataEntry(outerKey, innerKey, (MyObject) innerValue));
             }
         }
+
+
+ static class DataEntry {
+        private String sorKey;
+        private String dateKey;
+        private MyObject myObject;
+
+        public DataEntry(String sorKey, String dateKey, MyObject myObject) {
+            this.sorKey = sorKey;
+            this.dateKey = dateKey;
+            this.myObject = myObject;
+        }
+
+        // Getters and setters
+        // ...
+    }
