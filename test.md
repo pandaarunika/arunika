@@ -1,41 +1,28 @@
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+import json
 
-import java.util.Date;
+def query_dynamodb(created_dt, source):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('your_table_name')  # Replace 'your_table_name' with your actual DynamoDB table name
 
-public class S3Example {
+    response = table.query(
+        IndexName='CreatedDtIndex',  # Assuming 'CreatedDt' is indexed
+        KeyConditionExpression=Key('CreatedDt').eq(created_dt) & Key('Source').eq(source)
+    )
 
-    public static void main(String[] args) {
-        String accessKey = "YOUR_ACCESS_KEY";
-        String secretKey = "YOUR_SECRET_KEY";
-        String region = "YOUR_REGION"; // e.g., us-east-1
-        String bucketName = "appid_pay";
-        String folderName = "REJECT/";
-        Date modifiedDate = new Date(); // Set your desired modified date here
+    filtered_records = []
+    for item in response['Items']:
+        file_dtl = json.loads(item['FileDtl'])
+        if file_dtl.get('Validation_Rejected', {}).get('N', 0) > 0 and item.get('Status') == 'Validation_Processed':
+            filtered_records.append(item)
 
-        BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("https://s3." + region + ".amazonaws.com", region))
-                .build();
+    return filtered_records
 
-        ListObjectsV2Request request = new ListObjectsV2Request()
-                .withBucketName(bucketName)
-                .withPrefix(folderName);
+# Example usage:
+created_dt = '2024-04-05'
+source = 'your_source_value'
+filtered_records = query_dynamodb(created_dt, source)
 
-        ListObjectsV2Result result = s3Client.listObjectsV2(request);
-
-        for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
-            if (objectSummary.getLastModified().equals(modifiedDate)) {
-                System.out.println("Object Key: " + objectSummary.getKey());
-                // Fetch other details or process the object as needed
-            }
-        }
-    }
-}
+for record in filtered_records:
+    print(record['Source'])  # Get the Source column detail for the filtered records
