@@ -1,30 +1,29 @@
-import boto3
-from boto3.dynamodb.conditions import Key
-import json
+import csv
+import os
 
-def query_dynamodb(created_dt, source):
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('your_table_name')  # Replace 'your_table_name' with your actual DynamoDB table name
+def count_distinct_rejection_reasons():
+    distinct_rejection_reasons = {}
+    current_directory = os.getcwd()
 
-    response = table.scan(
-        FilterExpression=Key('CreatedDt').eq(created_dt) & Key('Source').eq(source)
-    )
+    # Loop through all files in the current directory
+    for file_name in os.listdir(current_directory):
+        if file_name.endswith('.csv'):
+            file_path = os.path.join(current_directory, file_name)
+            
+            # Open each CSV file and read RejectionReason column
+            with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    rejection_reason = row.get('RejectionReason')
+                    if rejection_reason:
+                        # Increment count for each distinct rejection reason
+                        distinct_rejection_reasons[rejection_reason] = distinct_rejection_reasons.get(rejection_reason, 0) + 1
 
-    filtered_records = []
-    for item in response['Items']:
-        file_dtl = json.loads(item['FileDtl'])
-        if file_dtl.get('Validation_Rejected', {}).get('N', 0) > 0 and item.get('Status') == 'Validation_Processed':
-         cob_dt = item.get('Cob_dt')
-            formatted_cob_dt = cob_dt.strftime('%Y-%m-%d') if cob_dt else None
-            item['Source'] = f"{item['Source']}_{formatted_cob_dt}" if formatted_cob_dt else item['Source']
-            filtered_records.append(item)
+    return distinct_rejection_reasons
 
-    return filtered_records
+# Get distinct rejection reasons and their counts
+distinct_rejection_reasons = count_distinct_rejection_reasons()
 
-# Example usage:
-created_dt = '2024-04-05'
-source = 'your_source_value'
-filtered_records = query_dynamodb(created_dt, source)
-
-for record in filtered_records:
-    print(record['Source'])  # Get the Source column detail for the filtered records
+# Print the distinct rejection reasons and their counts
+for reason, count in distinct_rejection_reasons.items():
+    print(f"Rejection Reason: {reason}, Count: {count}")
