@@ -1,14 +1,13 @@
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key
 import json
 
 def query_dynamodb(created_dt, source):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('your_table_name')  # Replace 'your_table_name' with your actual DynamoDB table name
 
-    response = table.query(
-        IndexName='CreatedDtIndex',  # Assuming 'CreatedDt' is indexed
-        KeyConditionExpression=Key('CreatedDt').eq(created_dt) & Key('Source').eq(source)
+    response = table.scan(
+        FilterExpression=Key('CreatedDt').eq(created_dt) & Key('Source').eq(source)
     )
 
     filtered_records = []
