@@ -1,29 +1,27 @@
-import pyodbc
+import jaydebeapi
 
-def connect_to_mysql_kerberos(server, database, principal):
-    conn_str = (
-        "DRIVER={MySQL ODBC 8.0 Unicode Driver};"
-        f"SERVER={server};"
-        f"DATABASE={database};"
-        "OPTION=3;"
-        "KERBEROS_SERVICE_PRINCIPAL_NAME=" + principal + ";"
-        "AuthenticationMethod=1;"
-    )
-
+def connect_to_oracle_kerberos(driver_path, class_name, url, principal, keytab_path):
+    conn = None
     try:
-        conn = pyodbc.connect(conn_str)
-        print("Connected to MySQL database using Kerberos authentication")
-        return conn
-    except pyodbc.Error as e:
-        print(f"Error connecting to MySQL database: {e}")
-        return None
+        conn = jaydebeapi.connect(
+            class_name,
+            url,
+            {'principal': principal, 'keytab': keytab_path},
+            driver_path,
+        )
+        print("Connected to Oracle database using Kerberos authentication")
+    except Exception as e:
+        print(f"Error connecting to Oracle database: {e}")
+    return conn
 
 # Example usage
-server_name = "your_mysql_server"
-database_name = "your_database"
-principal_name = "your_principal"
+driver_path = '/path/to/oracle_jdbc_driver.jar'
+class_name = 'oracle.jdbc.OracleDriver'
+url = 'jdbc:oracle:thin:@//your_oracle_server:1521/your_service_name'
+principal = 'your_principal@YOUR.REALM'
+keytab_path = '/path/to/your/keytab.keytab'
 
-connection = connect_to_mysql_kerberos(server_name, database_name, principal_name)
+connection = connect_to_oracle_kerberos(driver_path, class_name, url, principal, keytab_path)
 if connection:
     # Perform database operations here
     cursor = connection.cursor()
