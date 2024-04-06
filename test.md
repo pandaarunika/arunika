@@ -1,29 +1,34 @@
-import csv
-import os
+import pyodbc
 
-def count_distinct_rejection_reasons():
-    distinct_rejection_reasons = {}
-    current_directory = os.getcwd()
+def connect_to_mysql_kerberos(server, database, principal):
+    conn_str = (
+        "DRIVER={MySQL ODBC 8.0 Unicode Driver};"
+        f"SERVER={server};"
+        f"DATABASE={database};"
+        "OPTION=3;"
+        "KERBEROS_SERVICE_PRINCIPAL_NAME=" + principal + ";"
+        "AuthenticationMethod=1;"
+    )
 
-    # Loop through all files in the current directory
-    for file_name in os.listdir(current_directory):
-        if file_name.endswith('.csv'):
-            file_path = os.path.join(current_directory, file_name)
-            
-            # Open each CSV file and read RejectionReason column
-            with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    rejection_reason = row.get('RejectionReason')
-                    if rejection_reason:
-                        # Increment count for each distinct rejection reason
-                        distinct_rejection_reasons[rejection_reason] = distinct_rejection_reasons.get(rejection_reason, 0) + 1
+    try:
+        conn = pyodbc.connect(conn_str)
+        print("Connected to MySQL database using Kerberos authentication")
+        return conn
+    except pyodbc.Error as e:
+        print(f"Error connecting to MySQL database: {e}")
+        return None
 
-    return distinct_rejection_reasons
+# Example usage
+server_name = "your_mysql_server"
+database_name = "your_database"
+principal_name = "your_principal"
 
-# Get distinct rejection reasons and their counts
-distinct_rejection_reasons = count_distinct_rejection_reasons()
-
-# Print the distinct rejection reasons and their counts
-for reason, count in distinct_rejection_reasons.items():
-    print(f"Rejection Reason: {reason}, Count: {count}")
+connection = connect_to_mysql_kerberos(server_name, database_name, principal_name)
+if connection:
+    # Perform database operations here
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM your_table")
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
+    connection.close()
