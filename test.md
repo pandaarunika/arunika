@@ -1,32 +1,38 @@
-import jaydebeapi
+import pymysql.cursors
 
-def connect_to_oracle_kerberos(driver_path, class_name, url, principal, keytab_path):
-    conn = None
-    try:
-        conn = jaydebeapi.connect(
-            class_name,
-            url,
-            {'principal': principal, 'keytab': keytab_path},
-            driver_path,
-        )
-        print("Connected to Oracle database using Kerberos authentication")
-    except Exception as e:
-        print(f"Error connecting to Oracle database: {e}")
-    return conn
+# Connection parameters
+host = 'your_host'
+database = 'your_database'
+user = 'your_username'
+passwd = 'your_password'
 
-# Example usage
-driver_path = '/path/to/oracle_jdbc_driver.jar'
-class_name = 'oracle.jdbc.OracleDriver'
-url = 'jdbc:oracle:thin:@//your_oracle_server:1521/your_service_name'
-principal = 'your_principal@YOUR.REALM'
-keytab_path = '/path/to/your/keytab.keytab'
+# Kerberos configuration
+krb5_conf = '/path/to/your/krb5.conf'
+krb5_ccache = '/path/to/your/krb5cc_cache'
 
-connection = connect_to_oracle_kerberos(driver_path, class_name, url, principal, keytab_path)
-if connection:
-    # Perform database operations here
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM your_table")
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
-    connection.close()
+try:
+    # Connect to the database using Kerberos authentication
+    conn = pymysql.connect(host=host,
+                           database=database,
+                           user=user,
+                           password=passwd,
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor,
+                           kerberos_service_name='mysql',
+                           kerberos_host_name=host,
+                           kerberos_service_host=host,
+                           kerberos_ccname=krb5_ccache,
+                           kerberos_config=krb5_conf)
+
+    # Use the connection
+    with conn.cursor() as cursor:
+        # Example query
+        sql = "SELECT * FROM your_table"
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        for row in results:
+            print(row)
+
+finally:
+    # Close the connection
+    conn.close()
