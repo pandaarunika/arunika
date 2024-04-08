@@ -1,38 +1,18 @@
-import boto3
-import pandas as pd
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-def read_data_from_s3(bucket_name, folder_prefix, column_name):
-    # Connect to S3
-    s3 = boto3.client('s3')
+public class Main {
+    public static void main(String[] args) {
+        // Input date string from Oracle
+        String oracleDate = "08-APR-24 04:51:41:351340000";
 
-    # List objects in the specified folder
-    objects = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_prefix)
+        // Extract the date part from the Oracle date string
+        String dateString = oracleDate.substring(0, 9); // Extracts "08-APR-24"
 
-    # Extract filenames from the objects
-    filenames = []
-    if 'Contents' in objects:
-        for obj in objects['Contents']:
-            filename = obj['Key'].split('/')[-1]  # Extract filename from the full object key
-            filenames.append(filename)
+        // Parse the date string into a LocalDate object
+        LocalDate localDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd-MMM-yy"));
 
-    # Read data from files and extract filenames from the specified column
-    filenames_from_data = []
-    for filename in filenames:
-        # Download file from S3
-        obj = s3.get_object(Bucket=bucket_name, Key=folder_prefix + filename)
-        file_content = obj['Body'].read().decode('utf-8')
-
-        # Assuming data is in CSV format, you can modify accordingly
-        df = pd.read_csv(file_content)
-
-        # Extract filenames from the specified column
-        filenames_from_data.extend(df[column_name].tolist())
-
-    return filenames_from_data
-
-# Example usage
-bucket_name = 'your-bucket-name'
-folder_prefix = 'Reject/'
-column_name = 'FileName'
-filenames = read_data_from_s3(bucket_name, folder_prefix, column_name)
-print("Filenames:", filenames)
+        // Print the LocalDate
+        System.out.println("LocalDate: " + localDate);
+    }
+}
