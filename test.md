@@ -1,41 +1,41 @@
-import java.util.HashMap;
+import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import java.util.Map;
 
 public class DynamoDBResponseConverter {
 
     public static void main(String[] args) {
         // Assuming `dynamodbResponse` is the DynamoDB response containing the `fileDtls` column
-        Map<String, Object> dynamodbResponse = new HashMap<>();
-        dynamodbResponse.put("fileDtls", Map.of(
-                "validation_rejected", Map.of("key1", 10, "key2", 20),
-                "reason", Map.of(
-                        "inner_key1", Map.of("sub_key1", 100, "sub_key2", 200),
-                        "inner_key2", Map.of("sub_key3", 300, "sub_key4", 400)
-                )
-        ));
+        Map<String, AttributeValue> dynamodbResponse = null; // Assuming you have the actual DynamoDB response
 
         // Convert `fileDtls` to a model of a map of string and integer values
         Map<String, Object> fileDetailsModel = new HashMap<>();
-        Map<String, Object> fileDtls = (Map<String, Object>) dynamodbResponse.get("fileDtls");
-        for (Map.Entry<String, Object> entry : fileDtls.entrySet()) {
-            if (entry.getValue() instanceof Map) {
-                Map<String, Object> innerMap = new HashMap<>();
-                ((Map<String, Object>) entry.getValue()).forEach((k, v) -> innerMap.put(k, Integer.parseInt(v.toString())));
-                fileDetailsModel.put(entry.getKey(), innerMap);
+        Map<String, AttributeValue> fileDtls = dynamodbResponse.get("fileDtls").getM();
+        for (Map.Entry<String, AttributeValue> entry : fileDtls.entrySet()) {
+            if (entry.getValue().getM() != null) {
+                Map<String, AttributeValue> innerMap = entry.getValue().getM();
+                Map<String, Integer> innerMapValues = new HashMap<>();
+                for (Map.Entry<String, AttributeValue> innerEntry : innerMap.entrySet()) {
+                    innerMapValues.put(innerEntry.getKey(), Integer.parseInt(innerEntry.getValue().getN()));
+                }
+                fileDetailsModel.put(entry.getKey(), innerMapValues);
             } else {
-                fileDetailsModel.put(entry.getKey(), entry.getValue());
+                fileDetailsModel.put(entry.getKey(), entry.getValue().getN()); // Assuming the value is a number
             }
         }
 
         // Extract inner map values for the `reason` field
         Map<String, Map<String, Integer>> reasonInnerMapValues = new HashMap<>();
         if (fileDtls.containsKey("reason")) {
-            Map<String, Map<String, Integer>> reasonOuterMap = (Map<String, Map<String, Integer>>) fileDtls.get("reason");
-            reasonOuterMap.forEach((innerKey, innerMap) -> {
+            Map<String, AttributeValue> reasonOuterMap = fileDtls.get("reason").getM();
+            for (Map.Entry<String, AttributeValue> outerEntry : reasonOuterMap.entrySet()) {
+                Map<String, AttributeValue> innerMap = outerEntry.getValue().getM();
                 Map<String, Integer> innerMapValues = new HashMap<>();
-                innerMap.forEach((k, v) -> innerMapValues.put(k, Integer.parseInt(v.toString())));
-                reasonInnerMapValues.put(innerKey, innerMapValues);
-            });
+                for (Map.Entry<String, AttributeValue> innerEntry : innerMap.entrySet()) {
+                    innerMapValues.put(innerEntry.getKey(), Integer.parseInt(innerEntry.getValue().getN()));
+                }
+                reasonInnerMapValues.put(outerEntry.getKey(), innerMapValues);
+            }
         }
 
         System.out.println("File Details Model: " + fileDetailsModel);
