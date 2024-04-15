@@ -1,38 +1,44 @@
-import pymysql.cursors
+import java.util.HashMap;
+import java.util.Map;
 
-# Connection parameters
-host = 'your_host'
-database = 'your_database'
-user = 'your_username'
-passwd = 'your_password'
+public class DynamoDBResponseConverter {
 
-# Kerberos configuration
-krb5_conf = '/path/to/your/krb5.conf'
-krb5_ccache = '/path/to/your/krb5cc_cache'
+    public static void main(String[] args) {
+        // Assuming `dynamodbResponse` is the DynamoDB response containing the `fileDtls` column
+        Map<String, Object> dynamodbResponse = new HashMap<>();
+        dynamodbResponse.put("fileDtls", Map.of(
+                "validation_rejected", Map.of("key1", 10, "key2", 20),
+                "reason", Map.of(
+                        "inner_key1", Map.of("sub_key1", 100, "sub_key2", 200),
+                        "inner_key2", Map.of("sub_key3", 300, "sub_key4", 400)
+                )
+        ));
 
-try:
-    # Connect to the database using Kerberos authentication
-    conn = pymysql.connect(host=host,
-                           database=database,
-                           user=user,
-                           password=passwd,
-                           charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor,
-                           kerberos_service_name='mysql',
-                           kerberos_host_name=host,
-                           kerberos_service_host=host,
-                           kerberos_ccname=krb5_ccache,
-                           kerberos_config=krb5_conf)
+        // Convert `fileDtls` to a model of a map of string and integer values
+        Map<String, Object> fileDetailsModel = new HashMap<>();
+        Map<String, Object> fileDtls = (Map<String, Object>) dynamodbResponse.get("fileDtls");
+        for (Map.Entry<String, Object> entry : fileDtls.entrySet()) {
+            if (entry.getValue() instanceof Map) {
+                Map<String, Object> innerMap = new HashMap<>();
+                ((Map<String, Object>) entry.getValue()).forEach((k, v) -> innerMap.put(k, Integer.parseInt(v.toString())));
+                fileDetailsModel.put(entry.getKey(), innerMap);
+            } else {
+                fileDetailsModel.put(entry.getKey(), entry.getValue());
+            }
+        }
 
-    # Use the connection
-    with conn.cursor() as cursor:
-        # Example query
-        sql = "SELECT * FROM your_table"
-        cursor.execute(sql)
-        results = cursor.fetchall()
-        for row in results:
-            print(row)
+        // Extract inner map values for the `reason` field
+        Map<String, Map<String, Integer>> reasonInnerMapValues = new HashMap<>();
+        if (fileDtls.containsKey("reason")) {
+            Map<String, Map<String, Integer>> reasonOuterMap = (Map<String, Map<String, Integer>>) fileDtls.get("reason");
+            reasonOuterMap.forEach((innerKey, innerMap) -> {
+                Map<String, Integer> innerMapValues = new HashMap<>();
+                innerMap.forEach((k, v) -> innerMapValues.put(k, Integer.parseInt(v.toString())));
+                reasonInnerMapValues.put(innerKey, innerMapValues);
+            });
+        }
 
-finally:
-    # Close the connection
-    conn.close()
+        System.out.println("File Details Model: " + fileDetailsModel);
+        System.out.println("Inner Map Values for Reason: " + reasonInnerMapValues);
+    }
+}
