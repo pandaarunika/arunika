@@ -1,25 +1,47 @@
-import pandas as pd
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-def iterate_and_store(csv_file):
-    # Read the CSV file
-    df = pd.read_csv(csv_file)
+public class WriteMapToFile {
+    public static void main(String[] args) {
+        // Create a sample map
+        Map<String, Integer> map = new HashMap<>();
+        map.put("Alice", 25);
+        map.put("Bob", 30);
+        map.put("Charlie", 35);
 
-    # Create a list to store the values for each row
-    row_values = []
+        // Create an ObjectMapper
+        ObjectMapper objectMapper = new ObjectMapper();
 
-    # Iterate through each row
-    for index, row in df.iterrows():
-        # Create a dictionary to store column values for the current row
-        row_data = {}
-        for column in df.columns:
-            row_data[column] = row[column]
-        # Append the dictionary to the list
-        row_values.append(row_data)
+        // Write the map to a JSON file
+        try {
+            objectMapper.writeValue(new File("map.json"), map);
+            System.out.println("Map written to JSON file successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
 
-    return row_values
 
-# Replace 'filename.csv' with the path to your CSV file
-csv_file = 'filename.csv'
 
-row_values = iterate_and_store(csv_file)
-print(row_values)
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+
+public class ReadMapFromFile {
+    public static void main(String[] args) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            // Read the map from the JSON file
+            Map<String, Integer> map = objectMapper.readValue(new File("map.json"), Map.class);
+            System.out.println("Map read from JSON file: " + map);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
