@@ -11,21 +11,43 @@ public class MapToCsv {
         private String name;
         private int age;
         private double salary;
-        
+        private Map<String, Integer> dataMap;
+
         // Constructor, getters, and setters (if needed)
-        public Model(String name, int age, double salary) {
+        public Model(String name, int age, double salary, Map<String, Integer> dataMap) {
             this.name = name;
             this.age = age;
             this.salary = salary;
+            this.dataMap = dataMap;
         }
-        
+
+        // Method to convert the map to a CSV-compatible format (inner table)
+        public String convertMapToInnerTable() {
+            // StringBuilder to concatenate the map values as an inner table
+            StringBuilder innerTable = new StringBuilder();
+            
+            // Iterate through the map entries
+            for (Map.Entry<String, Integer> entry : dataMap.entrySet()) {
+                // Concatenate key-value pairs with a separator (e.g., `:`)
+                innerTable.append(entry.getKey()).append(":").append(entry.getValue()).append(",");
+            }
+            
+            // Remove the trailing comma, if present
+            if (innerTable.length() > 0) {
+                innerTable.deleteCharAt(innerTable.length() - 1);
+            }
+            
+            return innerTable.toString();
+        }
+
         @Override
         public String toString() {
-            // Return the Model object as a CSV row (comma-separated values)
-            return name + "," + age + "," + salary;
+            // Return the Model object as a CSV row
+            // Include the inner table representation
+            return name + "," + age + "," + salary + "," + convertMapToInnerTable();
         }
     }
-    
+
     // Function to convert a Map<LocalDate, Map<String, List<Model>>> to a CSV file
     public static void convertMapToCsv(Map<LocalDate, Map<String, List<Model>>> data, String csvFilePath) throws IOException {
         // Create a FileWriter to write to the CSV file
@@ -53,18 +75,7 @@ public class MapToCsv {
     public static void main(String[] args) {
         // Example usage:
         // Define your map of data
-        Map<LocalDate, Map<String, List<Model>>> data = Map.of(
-            LocalDate.of(2024, 4, 22), Map.of(
-                "Department1", List.of(
-                    new Model("John Doe", 30, 60000),
-                    new Model("Jane Smith", 25, 55000)
-                ),
-                "Department2", List.of(
-                    new Model("Alice Johnson", 35, 70000),
-                    new Model("Bob Wilson", 40, 80000)
-                )
-            )
-        );
+        Map<LocalDate, Map<String, List<Model>>> data = // Add your data here
 
         // Specify the path to the CSV file
         String csvFilePath = "output.csv";
