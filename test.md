@@ -1,24 +1,34 @@
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+public static List<LocalDateTime> generateDateTimeRange(LocalDate startDate, LocalDate endDate) {
+    List<LocalDateTime> dateTimeList = new ArrayList<>();
 
-public class MapToCsv {
+    // Iterate through each day in the range
+    LocalDate currentDate = startDate;
+    while (!currentDate.isAfter(endDate)) {
+        // Convert current date to the start of the day (00:00:00)
+        LocalDateTime startOfDay = currentDate.atStartOfDay();
+        dateTimeList.add(startOfDay);
 
-    // Utility method to format a cell value for CSV
-    public static String formatCellValue(String value) {
-        // Check if the value contains a comma, newline, or double quote
-        if (value.contains(",") || value.contains("\n") || value.contains("\"")) {
-            // Escape double quotes in the value
-            value = value.replace("\"", "\"\"");
-            // Wrap the value in double quotes
-            value = "\"" + value + "\"";
-        }
-        return value;
+        // Convert current date to the end of the day (23:59:59)
+        LocalDateTime endOfDay = currentDate.atTime(LocalTime.MAX);
+        dateTimeList.add(endOfDay);
+
+        // Move to the next day
+        currentDate = currentDate.plusDays(1);
     }
 
-    public static class Model {
-        // Define the properties of your Model class
-        private String name;
-        private
+    return dateTimeList;
+}
+
+public static void main(String[] args) {
+    // Define the date range
+    LocalDate startDate = LocalDate.parse("2024-04-01");
+    LocalDate endDate = LocalDate.parse("2024-04-05");
+
+    // Generate the list of LocalDateTime instances
+    List<LocalDateTime> dateTimeList = generateDateTimeRange(startDate, endDate);
+
+    // Print the list
+    for (LocalDateTime dateTime : dateTimeList) {
+        System.out.println(dateTime);
+    }
+}
